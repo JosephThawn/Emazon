@@ -13,14 +13,24 @@ import {
 } from "@mui/material";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { useSnackbar } from "notistack";
 import Layout from "../../components/Layout";
 import classes from "../../utils/classes";
 import client from "../../utils/client";
-import { urlFor } from "../../utils/image";
+import { urlFor, urlForThumbnail } from "../../utils/image";
+import { Store } from "../../utils/Store";
+import axios from "axios";
+import { useRouter } from "next/router";
 
 export default function ProductScreen(props) {
+  const router = useRouter();
   const { slug } = props;
+  const {
+    state: { cart },
+    dispatch,
+  } = useContext(Store);
+  const { enqueueSnackbar } = useSnackbar();
   const [state, setState] = useState({
     product: null,
     loading: true,
@@ -32,7 +42,7 @@ export default function ProductScreen(props) {
       try {
         const product = await client.fetch(
           `
-              *[_type == "product" && slug.current == $slug][0]`,
+            *[_type == "product" && slug.current == $slug][0]`,
           { slug }
         );
         setState({ ...state, product, loading: false });
@@ -43,6 +53,34 @@ export default function ProductScreen(props) {
     fetchData();
   }, []);
 
+  const addToCartHandler = async () => {
+    console.log("helloOne");
+    console.log(cart.cartItems);
+    const existItem = cart.cartItems.find((x) => x?._id === product._id);
+    console.log("hello", existItem);
+    const quantity = existItem ? existItem.quantity + 1 : 1;
+    const { data } = await axios.get(`/api/products/${product._id}`);
+    if (data.countInStock < quantity) {
+      enqueueSnackbar("Sorry. Product is out of stock", { variant: "error" });
+      return;
+    }
+    dispatch({
+      type: "CART_ADD_ITEM",
+      payload: {
+        _key: product._id,
+        name: product.name,
+        countInStock: product.countInStock,
+        slug: product.slug.current,
+        price: product.price,
+        image: urlForThumbnail(product.image),
+        quantity,
+      },
+    });
+    enqueueSnackbar(`${product.name} added to the cart`, {
+      variant: "success",
+    });
+    router.push("/cart");
+  };
   return (
     <Layout title={product?.title}>
       {loading ? (
@@ -68,7 +106,7 @@ export default function ProductScreen(props) {
                 height={640}
               />
             </Grid>
-            <Grid md={3} xs={12}>
+            <Grid item md={3} xs={12}>
               <List>
                 <ListItem>
                   <Typography component="h1" variant="h1">
@@ -116,7 +154,11 @@ export default function ProductScreen(props) {
                     </Grid>
                   </ListItem>
                   <ListItem>
-                    <Button fullWidth variant="contained">
+                    <Button
+                      onClick={addToCartHandler}
+                      fullWidth
+                      variant="contained"
+                    >
                       Add to cart
                     </Button>
                   </ListItem>

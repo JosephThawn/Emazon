@@ -14,20 +14,17 @@ import Head from "next/head";
 import NextLink from "next/link";
 import classes from "../utils/classes";
 import { useContext } from "react";
-import { Store } from "../utils/store";
+import { Store } from "../utils/Store";
 import jsCookie from "js-cookie";
 
 export default function Layout({ title, description, children }) {
   const { state, dispatch } = useContext(Store);
   const { darkMode } = state;
-
-  //coming from mui.material/styles
-
   const theme = createTheme({
     components: {
       MuiLink: {
         defaultProps: {
-          //   underline: "hover",
+          underline: "hover",
         },
       },
     },
@@ -53,10 +50,8 @@ export default function Layout({ title, description, children }) {
       },
     },
   });
-
   const darkModeChangeHandler = () => {
     dispatch({ type: darkMode ? "DARK_MODE_OFF" : "DARK_MODE_ON" });
-    //why this newDarkMode is required?
     const newDarkMode = !darkMode;
     jsCookie.set("darkMode", newDarkMode ? "ON" : "OFF");
   };

@@ -17,9 +17,12 @@
     "@mui/styles": "^5.9.3",
     "@sanity/client": "^3.0.6",
     "@sanity/image-url": "^1.0.1",
+    "axios": "^0.27.2",
     "eslint-plugin-react-hooks": "^4.7.0-next-19e9a4c68-20220818",
     "js-cookie": "^3.0.1",
     "next": "12.2.5",
+    "next-connect": "^0.13.0",
+    "notistack": "^2.0.5",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
