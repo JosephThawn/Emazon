@@ -95,6 +95,9 @@ export default function Layout({ title, description, children }) {
                   </Link>
                 </Typography>
               </NextLink>
+              <NextLink href="/login" passHref>
+                <Link>Login</Link>
+              </NextLink>
             </Box>
           </Toolbar>
         </AppBar>
