@@ -17,11 +17,10 @@ import classes from "../utils/classes";
 import { useContext } from "react";
 import { Store } from "../utils/Store";
 import jsCookie from "js-cookie";
-import { CardTravel } from "@mui/icons-material";
 
 export default function Layout({ title, description, children }) {
   const { state, dispatch } = useContext(Store);
-  const { darkMode, cart } = state;
+  const { darkMode, cart, userInfo } = state;
   const theme = createTheme({
     components: {
       MuiLink: {
@@ -79,9 +78,9 @@ export default function Layout({ title, description, children }) {
                 checked={darkMode}
                 onChange={darkModeChangeHandler}
               ></Switch>
-              <NextLink href="./cart" passref>
-                <Typography component="span">
-                  <Link>
+              <NextLink href="/cart" passHref>
+                <Link>
+                  <Typography component="span">
                     {cart.cartItems.length > 0 ? (
                       <Badge
                         color="secondary"
@@ -92,12 +91,18 @@ export default function Layout({ title, description, children }) {
                     ) : (
                       "Cart"
                     )}
-                  </Link>
-                </Typography>
+                  </Typography>
+                </Link>
               </NextLink>
-              <NextLink href="/login" passHref>
-                <Link>Login</Link>
-              </NextLink>
+              {userInfo ? (
+                <NextLink href="/profile" passHref>
+                  <Link>{userInfo.name}</Link>
+                </NextLink>
+              ) : (
+                <NextLink href="/login" passHref>
+                  <Link>Login</Link>
+                </NextLink>
+              )}
             </Box>
           </Toolbar>
         </AppBar>

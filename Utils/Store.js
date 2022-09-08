@@ -7,12 +7,14 @@ const initialState = {
   darkMode: Cookies.get("darkMode") === "ON" ? true : false,
   cart: {
     cartItems: Cookies.get("cartItems")
-      ? //implement a new line because cookies uses are vary that is why filter out he cartItems !== null
-        JSON.parse(Cookies.get("cartItems")).filter((x) => x !== null)
+      ? JSON.parse(Cookies.get("cartItems"))
       : [],
   },
+  userInfo: Cookies.get("userInfo")
+    ? JSON.parse(Cookies.get("userInfo"))
+    : null,
 };
-console.log(Cookies.get("cartItems"));
+
 function reducer(state, action) {
   switch (action.type) {
     case "DARK_MODE_ON":
@@ -22,7 +24,7 @@ function reducer(state, action) {
     case "CART_ADD_ITEM": {
       const newItem = action.payload;
       const existItem = state.cart.cartItems.find(
-        (item) => item?._key === newItem._key
+        (item) => item._key === newItem._key
       );
       const cartItems = existItem
         ? state.cart.cartItems.map((item) =>
@@ -38,6 +40,8 @@ function reducer(state, action) {
       );
       Cookies.set("cartItems", JSON.stringify(cartItems));
       return { ...state, cart: { ...state.cart, cartItems } };
+    case "USER_LOGIN":
+      return { ...state, userInfo: action.payload };
     default:
       return state;
   }
