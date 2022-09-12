@@ -1,25 +1,52 @@
-import React from "react";
-import { useForm, Controller } from "react-hook-form";
+import React, { useContext, useEffect } from "react";
 import Layout from "../components/Layout";
+import { useForm, Controller } from "react-hook-form";
+import NextLink from "next/link";
 import Form from "../components/Form";
 import {
   Button,
+  Link,
   List,
   ListItem,
   TextField,
   Typography,
-  Link,
 } from "@mui/material";
-import NextLink from "next/Link";
+import { useSnackbar } from "notistack";
+import axios from "axios";
+import { Store } from "../utils/Store";
+import { useRouter } from "next/router";
+import jsCookie from "js-cookie";
+import { getError } from "../utils/error";
 
 export default function LoginScreen() {
+  const { state, dispatch } = useContext(Store);
+  const { userInfo } = state;
+  const router = useRouter();
+  useEffect(() => {
+    if (userInfo) {
+      router.push("/");
+    }
+  }, [router, userInfo]);
   const {
     handleSubmit,
     control,
     formState: { errors },
   } = useForm();
 
-  const submitHandler = async ({ email, password }) => {};
+  const { enqueueSnackbar } = useSnackbar();
+  const submitHandler = async ({ email, password }) => {
+    try {
+      const { data } = await axios.post("/api/users/login", {
+        email,
+        password,
+      });
+      dispatch({ type: "USER_LOGIN", payload: data });
+      jsCookie.set("userInfo", JSON.stringify(data));
+      router.push("/");
+    } catch (err) {
+      enqueueSnackbar(getError(err), { variant: "error" });
+    }
+  };
   return (
     <Layout title="Login">
       <Form onSubmit={handleSubmit(submitHandler)}>
@@ -33,7 +60,7 @@ export default function LoginScreen() {
               control={control}
               defaultValue=""
               rules={{
-                requird: true,
+                required: true,
                 pattern: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
               }}
               render={({ field }) => (
@@ -62,7 +89,7 @@ export default function LoginScreen() {
               control={control}
               defaultValue=""
               rules={{
-                requird: true,
+                required: true,
                 minLength: 6,
               }}
               render={({ field }) => (
@@ -74,9 +101,9 @@ export default function LoginScreen() {
                   inputProps={{ type: "password" }}
                   error={Boolean(errors.password)}
                   helperText={
-                    errors.email
-                      ? errors.email.type === "minLength"
-                        ? "Password is not valid"
+                    errors.password
+                      ? errors.password.type === "minLength"
+                        ? "Password length is more than 5"
                         : "Password is required"
                       : ""
                   }

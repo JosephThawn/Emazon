@@ -3,15 +3,14 @@ import bcrypt from "bcryptjs";
 import axios from "axios";
 import config from "../../../utils/config";
 import { signToken } from "../../../utils/auth";
+import client from "../../../utils/client";
 
 const handler = nc();
 
 handler.post(async (req, res) => {
   const projectId = config.projectId;
   const dataset = config.dataset;
-  //crereating and updating data
   const tokenWithWriteAccess = process.env.SANITY_AUTH_TOKEN;
-
   const createMutations = [
     {
       create: {
@@ -23,7 +22,15 @@ handler.post(async (req, res) => {
       },
     },
   ];
-
+  const existUser = await client.fetch(
+    `*[_type == "user" && email == $email][0]`,
+    {
+      email: req.body.email,
+    }
+  );
+  if (existUser) {
+    return res.status(401).send({ message: "Email aleardy exists" });
+  }
   const { data } = await axios.post(
     `https://${projectId}.api.sanity.io/v1/data/mutate/${dataset}?returnIds=true`,
     { mutations: createMutations },
